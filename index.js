@@ -1,39 +1,18 @@
 (function() {
-    console.log("🎲 [Dice Roller] 开始执行防弹版注入代码...");
+    console.log("🎲 [Dice Roller] 放弃悬浮，启动原生 UI 注入模式...");
 
-    // 1. 无视酒馆配置，用 JS 强行注入 CSS，确保绝对可见！
+    // 1. 只保留动画容器的 CSS，彻底抛弃悬浮按钮的样式
     const styleId = 'st-dice-style';
     if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
         style.id = styleId;
         style.innerHTML = `
-            #st-floating-dice-btn {
-                position: fixed !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                width: 60px !important;
-                height: 60px !important;
-                background: rgba(30, 30, 30, 0.9) !important;
-                border: 2px solid #8b0000 !important;
-                border-radius: 50% !important;
-                font-size: 35px !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                cursor: grab !important;
-                touch-action: none !important;
-                z-index: 2147483647 !important; /* 浏览器允许的最高层级，神仙来了也挡不住 */
-                box-shadow: 0 0 15px rgba(139, 0, 0, 0.8) !important;
-                user-select: none !important;
-                color: white !important;
-            }
             #dice-canvas-container {
                 display: none;
                 position: fixed !important;
-                top: 20% !important;
+                top: 40% !important;
                 left: 50% !important;
-                transform: translate(-50%, 0) !important;
+                transform: translate(-50%, -50%) !important;
                 z-index: 2147483647 !important;
                 background: rgba(15, 15, 15, 0.95) !important;
                 border: 2px solid #8b0000 !important;
@@ -49,107 +28,78 @@
         document.head.appendChild(style);
     }
 
-    // 2. 清理可能残留的死掉的骰子
-    const oldBtn = document.getElementById('st-floating-dice-btn');
-    if (oldBtn) oldBtn.remove();
+    // 2. 清理旧残骸
     const oldContainer = document.getElementById('dice-canvas-container');
     if (oldContainer) oldContainer.remove();
 
-    // 3. 注入实体
-    const diceBtn = document.createElement('div');
-    diceBtn.id = 'st-floating-dice-btn';
-    diceBtn.innerHTML = '🎲';
-    document.body.appendChild(diceBtn);
-
+    // 3. 创建纯粹的动画弹窗
     const diceContainer = document.createElement('div');
     diceContainer.id = 'dice-canvas-container';
     document.body.appendChild(diceContainer);
 
-    // 4. 双轨拖拽逻辑（同时支持电脑鼠标和手机触屏）
-    let isDragging = false;
-    let startX, startY;
-    let initialX, initialY;
-    let hasMoved = false;
+    // 4. 【核心黑科技】：注入酒馆原生菜单
+    function injectNativeButton() {
+        // 防止重复注入
+        if (document.getElementById('native-dice-btn')) return;
 
-    const startDrag = (e) => {
-        isDragging = true;
-        hasMoved = false;
-        // 兼容触屏和鼠标
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        startX = clientX;
-        startY = clientY;
-        
-        const rect = diceBtn.getBoundingClientRect();
-        initialX = rect.left;
-        initialY = rect.top;
-        
-        // 拖拽时取消居中 transform，防止鼠标跳跃偏移
-        diceBtn.style.transform = 'none';
-        diceBtn.style.left = initialX + 'px';
-        diceBtn.style.top = initialY + 'px';
-    };
-
-    const doDrag = (e) => {
-        if (!isDragging) return;
-        e.preventDefault(); // 阻止手机滑动屏幕
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        const dx = clientX - startX;
-        const dy = clientY - startY;
-        
-        // 滑动大于 5 像素才判定为拖拽
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-            hasMoved = true;
+        // 方案 A：直接把骰子塞进你截图里的那个展开菜单 (options_list) 的最底下
+        const menuList = document.getElementById('options_list');
+        if (menuList) {
+            const menuItem = document.createElement('div');
+            menuItem.id = 'native-dice-btn';
+            menuItem.className = 'list-group-item interactable'; // 完美伪装成酒馆原生按钮
+            menuItem.style.color = '#ff6b6b';
+            menuItem.style.fontWeight = 'bold';
+            menuItem.innerHTML = `<span class="fa-solid fa-dice" style="margin-right: 10px;"></span>🎲 投骰子检定`;
+            
+            menuItem.addEventListener('click', () => {
+                rollDice();
+                // 点击后顺手帮你把菜单自动关上，深藏功与名
+                const optionsBtn = document.getElementById('options_button');
+                if (optionsBtn) optionsBtn.click();
+            });
+            
+            menuList.appendChild(menuItem);
+            console.log("🎲 成功潜入折叠菜单！");
         }
-        
-        if (hasMoved) {
-            diceBtn.style.left = (initialX + dx) + 'px';
-            diceBtn.style.top = (initialY + dy) + 'px';
+
+        // 方案 B：如果菜单还没渲染出来，我们可以在底部工具栏（比如纸飞机或三横线旁边）硬插一个常驻图标
+        /*
+        const optionsBtn = document.getElementById('options_button');
+        if (optionsBtn && !document.getElementById('quick-dice-btn')) {
+            const quickBtn = document.createElement('div');
+            quickBtn.id = 'quick-dice-btn';
+            quickBtn.className = 'interactable';
+            quickBtn.style.padding = '10px';
+            quickBtn.style.fontSize = '22px';
+            quickBtn.innerHTML = '🎲';
+            quickBtn.addEventListener('click', rollDice);
+            optionsBtn.parentNode.insertBefore(quickBtn, optionsBtn);
         }
-    };
+        */
+    }
 
-    const endDrag = (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        // 如果没移动，就是点击，触发掷骰子
-        if (!hasMoved) {
-            rollDice();
-        }
-    };
+    // 因为酒馆的 UI 是动态加载的，我们用定时器每两秒巡逻一次，一旦发现菜单就立刻把咱们的按钮塞进去
+    setInterval(injectNativeButton, 2000);
 
-    // 绑定事件（无死角覆盖）
-    diceBtn.addEventListener('mousedown', startDrag);
-    document.addEventListener('mousemove', doDrag, { passive: false });
-    document.addEventListener('mouseup', endDrag);
-
-    diceBtn.addEventListener('touchstart', startDrag, { passive: false });
-    document.addEventListener('touchmove', doDrag, { passive: false });
-    document.addEventListener('touchend', endDrag);
-
-    // 5. 核心判定逻辑
+    // 5. 动画与填字逻辑（保持不变）
     function rollDice() {
         const formula = '1d100';
         diceContainer.style.display = 'block';
         diceContainer.innerHTML = `🎲 命运判定中: ${formula}...`;
 
-        diceBtn.style.pointerEvents = 'none';
-        diceBtn.style.opacity = '0.5';
-
         setTimeout(() => {
             const result = Math.floor(Math.random() * 100) + 1;
             diceContainer.style.display = 'none';
-            diceBtn.style.pointerEvents = 'auto';
-            diceBtn.style.opacity = '1';
 
             const textarea = document.getElementById('send_textarea');
             if (textarea) {
                 const chatMessage = `（系统提示：玩家进行了 ${formula} 检定，最终掷出：${result}）`;
                 const originalText = textarea.value;
-                textarea.value = originalText + (originalText ? '\n' : '') + chatMessage;
+                textarea.value = originalText + (originalText ? '\\n' : '') + chatMessage;
+                // 触发酒馆的底层输入事件，让它意识到文字变了
                 textarea.dispatchEvent(new Event('input', { bubbles: true }));
             }
-        }, 1500); // 1.5秒动画后输出结果
+        }, 1500);
     }
 })();
