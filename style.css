@@ -1,4 +1,4 @@
-/* 掷骰子动画弹出层（保持不变） */
+/* Dice rolling animation popup container */
 #dice-canvas-container {
     display: none;
     position: fixed;
@@ -28,13 +28,13 @@
     to { opacity: 1; text-shadow: 0 0 20px #ff0000; }
 }
 
-/* 悬浮骰子按钮（改成居中+可拖拽样式） */
+/* Floating draggable dice button */
 #st-floating-dice-btn {
     position: fixed;
-    /* 初始放置在屏幕正中心 */
+    /* Initially placed in the exact center of the screen */
     top: 50vh;
     left: 50vw;
-    /* 修正自身体积带来的偏移 (55px的一半) */
+    /* Offset by half of its width/height to center perfectly */
     margin-top: -27px;
     margin-left: -27px;
     
@@ -48,7 +48,7 @@
     justify-content: center;
     align-items: center;
     
-    /* 鼠标样式改为可抓取 */
+    /* Change cursor to indicate draggability */
     cursor: grab;
     touch-action: none; 
     z-index: 90000;
