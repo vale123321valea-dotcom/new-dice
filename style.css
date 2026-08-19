@@ -1,0 +1,61 @@
+/* 掷骰子动画弹出层（保持不变） */
+#dice-canvas-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    background: rgba(15, 15, 15, 0.95);
+    border: 2px solid #8b0000;
+    border-radius: 10px;
+    padding: 40px 60px;
+    text-align: center;
+    color: #eeeeee;
+    font-family: 'Courier New', Courier, monospace;
+    box-shadow: 0 0 35px rgba(139, 0, 0, 0.5);
+}
+
+.dice-rolling-text {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    animation: pulse 0.6s infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 0.5; text-shadow: 0 0 5px #8b0000; }
+    to { opacity: 1; text-shadow: 0 0 20px #ff0000; }
+}
+
+/* 悬浮骰子按钮（改成居中+可拖拽样式） */
+#st-floating-dice-btn {
+    position: fixed;
+    /* 初始放置在屏幕正中心 */
+    top: 50vh;
+    left: 50vw;
+    /* 修正自身体积带来的偏移 (55px的一半) */
+    margin-top: -27px;
+    margin-left: -27px;
+    
+    width: 55px;
+    height: 55px;
+    background: rgba(30, 30, 30, 0.85);
+    border: 2px solid #8b0000;
+    border-radius: 50%;
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* 鼠标样式改为可抓取 */
+    cursor: grab;
+    touch-action: none; 
+    z-index: 90000;
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+    user-select: none;
+}
+
+#st-floating-dice-btn:active {
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
+}
