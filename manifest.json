@@ -1,7 +1,7 @@
 {
   "display_name": "Floating Dice Roller",
   "name": "floating_dice_roller",
-  "version": "1.2.0",
+  "version": "1.2.5",
   "author": "Lilia",
   "description": "A floating draggable dice roller for TTRPGs",
   "main": "index.js",
